@@ -5,106 +5,232 @@ function preload() {
   game.load.image('star', 'http://www.first-last-always.com/application/themes/default/images/dot-white.png');
   game.load.image('bullet', 'bullet.png');
   game.load.image('ship', 'spshipspr1.png');
-  game.load.image("enemy", "smallfreighterspr")
+  game.load.image("enemy", "smallfreighterspr.png");
+  game.load.image("laser", "laser.png");
+  game.load.spritesheet("asteroids", "asteroids.png", 128, 128, 16);
+  game.load.spritesheet("explosions", "explosion.png", 96, 96, 20);
 }
 
-var sprite;
+var ship;
 var cursors;
 var bullet;
 var bullets;
 var bulletTime = 0;
+var asteroids;
+var asteroid;
+var explosion;
+//var enemy;
+var lasers;
+var laser;
 
 function create() {
   game.renderer.clearBeforeRender = true;
   game.renderer.roundPixels = true;
 
   game.world.setBounds(0, 0, 2000, 2000);
-
   game.physics.startSystem(Phaser.Physics.ARCADE);
 
   game.stage.backgroundColor = "#000";
 
-  for (var i = 0; i < 50; i++) {
-      game.add.sprite(game.world.randomX, game.world.randomY, 'star');
-  }
+  createBullets();
 
-  bullets = game.add.group();
-  bullets.enableBody = true;
-  bullets.physicsBodyType = Phaser.Physics.ARCADE;
+  createLasers();
 
-  sprite = game.add.sprite(300, 300, 'ship');
-  sprite.anchor.set(0.5);
+  createAsteroids(40, 1, 5);
 
-  bullets.createMultiple(40, 'bullet');
-  bullets.setAll("anchor.x", 0.5);
-  bullets.setAll("anchor.y", 0.5);
+  createStars(1000, 1);
 
-  game.camera.follow(sprite);
+  createShip(300, 300, 1, 10);
 
-  game.physics.enable(sprite, Phaser.Physics.ARCADE);
-
-  sprite.body.maxVelocity.set(300);
+  createEnemies(2, 100, 1, 5);
 
   cursors = game.input.keyboard.createCursorKeys();
   game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
-
 }
 
 function update() {
+  screenWrap(ship);
+//  screenWrap(enemies);
+
   if (cursors.up.isDown) {
-    game.physics.arcade.accelerationFromRotation(sprite.rotation, 300, sprite.body.acceleration);
+    game.physics.arcade.accelerationFromRotation(ship.rotation, 300, ship.body.acceleration);
   } else {
-    sprite.body.acceleration.set(0);
+    ship.body.acceleration.set(0);
   }
 
   if (cursors.left.isDown) {
-    sprite.body.angularVelocity = -300;
+    ship.body.angularVelocity = -300;
   } else if (cursors.right.isDown) {
-    sprite.body.angularVelocity = 300;
+    ship.body.angularVelocity = 300;
   } else {
-    sprite.body.angularVelocity = 0;
+    ship.body.angularVelocity = 0;
   }
 
   if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
-      fireBullet();
+    fireBullet();
   }
 
-    screenWrap(sprite);
+  game.physics.arcade.overlap(asteroids, bullets, collisionHandler, null, this);
 
-    bullets.forEachExists(screenWrap, this);
-}
+  game.physics.arcade.overlap(ship, lasers, collisionHandler, null, this);
 
-function fireBullet () {
+  game.physics.arcade.overlap(enemies, bullets, collisionHandler, null, this);
 
-    if (game.time.now > bulletTime) {
-        bullet = bullets.getFirstExists(false);
+  bullets.forEachExists(screenWrap, this);
+  lasers.forEachExists(screenWrap, this);
+  enemies.forEachExists(screenWrap, this);
 
-        if (bullet) {
-            bullet.reset(sprite.body.x + 16, sprite.body.y + 16);
-            bullet.lifespan = 2000;
-            bullet.rotation = sprite.rotation;
-            game.physics.arcade.velocityFromRotation(sprite.rotation, 400, bullet.body.velocity);
-            bulletTime = game.time.now + 50;
-        }
+  for (var i = 0; i < enemies.children.length; i++) {
+    if(enemies.children[i].alive){
+      flyEnemies(enemies.children[i]);
     }
+  }
+
+  victoryTest();
 }
 
-function screenWrap (sprite) {
-  if (sprite.x < 0) {
-      sprite.x = game.world.bounds.width;
+function createBullets() {
+  bullets = game.add.group();
+  bullets.enableBody = true;
+  bullets.physicsBodyType = Phaser.Physics.ARCADE;
+  bullets.createMultiple(40, 'bullet');
+  bullets.setAll("anchor.x", 0.5);
+  bullets.setAll("anchor.y", 0.5);
+}
+
+function createLasers() {
+  lasers = game.add.group();
+  lasers.enableBody = true;
+  lasers.physicsBodyType = Phaser.Physics.ARCADE;
+  lasers.createMultiple(40, "laser");
+  lasers.setAll("anchor.x", 0.5);
+  lasers.setAll("anchor.y", 0.5);
+}
+
+function createAsteroids(n, v, health) {
+  asteroids = game.add.group();
+  asteroids.enableBody = true;
+  asteroids.physicsBodyType = Phaser.Physics.ARCADE;
+
+  for (var i = 0; i < n; i++) {
+    asteroid = game.add.sprite(game.world.randomX, game.world.randomY, "asteroids", i, asteroids);
+    asteroid.body.velocity.x = v;
+    asteroid.body.velocity.y = v;
+    asteroid.health = health;
   }
-  else if (sprite.x > game.world.bounds.width) {
-      sprite.x = 0;
+}
+
+function createStars(n, s) {
+  for (var i = 0; i < n; i++) {
+    var star = game.add.sprite(game.world.randomX, game.world.randomY, 'star');
+    star.scale.setTo(0.02 * s, 0.02 * s);
+  }
+}
+
+function createShip(x, y, size, health) {
+  ship = game.add.sprite(x, y, 'ship');
+  ship.anchor.set(0.5);
+  ship.scale.setTo(size, size);
+  game.camera.follow(ship);
+  game.physics.enable(ship, Phaser.Physics.ARCADE);
+  ship.body.maxVelocity.set(300);
+  ship.health = health;
+}
+
+function createEnemies(n, v, size, health) {
+  enemies = game.add.group();
+
+  for (var i = 0; i < n; i++) {
+    var enemy = game.add.sprite(500, 300 + 200 * i, "enemy", 1, enemies);
+    enemy.anchor.set(0.5);
+    enemy.scale.setTo(size, size);
+    game.physics.enable(enemy, Phaser.Physics.ARCADE);
+    enemy.body.maxVelocity.set(v)
+    enemy.health = health;
+    enemy.laserTime = 0;
+  }
+}
+
+function fireBullet() {
+  if(game.time.now > bulletTime) {
+    bullet = bullets.getFirstExists(false);
+
+    if(bullet) {
+      bullet.reset(ship.body.x + 25, ship.body.y + 25);
+      bullet.lifespan = 2000;
+      bullet.rotation = ship.rotation;
+      game.physics.arcade.velocityFromRotation(ship.rotation, 600, bullet.body.velocity);
+      bulletTime = game.time.now + 50;
+    }
+  }
+}
+
+function fireLaser(enemy) {
+  if(game.time.now > enemy.laserTime) {
+    laser = lasers.getFirstExists(false);
+
+    if(laser) {
+      laser.reset(enemy.body.x + 25, enemy.body.y + 25);
+      laser.lifespan = 2000;
+      laser.rotation = enemy.rotation;
+      game.physics.arcade.velocityFromRotation(enemy.rotation, 400, laser.body.velocity);
+      enemy.laserTime = game.time.now + 60;
+    }
+  }
+}
+
+function flyEnemies(enemy) {
+  var direction = new Phaser.Point(ship.x, ship.y);
+  var vector;
+  direction.subtract(enemy.x, enemy.y);
+  direction.normalize();
+  vector = Math.atan2(direction.y, direction.x) - enemy.rotation;
+  if(vector > 0.1) {
+    enemy.body.angularVelocity = 200;
+  } else if(vector < -0.1) {
+    enemy.body.angularVelocity = -200;
+  } else {
+    enemy.body.angularVelocity = 0;
+    fireLaser(enemy);
+  }
+  game.physics.arcade.accelerationFromRotation(enemy.rotation, 400, enemy.body.acceleration);
+}
+
+function screenWrap (ship) {
+  if (ship.x < 0) {
+    ship.x = game.world.bounds.width;
+  }
+  else if (ship.x > game.world.bounds.width) {
+    ship.x = 0;
   }
 
-  if (sprite.y < 0) {
-      sprite.y = game.world.bounds.height;
+  if (ship.y < 0) {
+    ship.y = game.world.bounds.height;
   }
-  else if (sprite.y > game.world.bounds.height) {
-      sprite.y = 0;
+  else if (ship.y > game.world.bounds.height) {
+    ship.y = 0;
+  }
+}
+
+function collisionHandler(target, projectile) {
+  if(target.health) {
+    target.health -= 1;
+  } else {
+    target.kill();
+    var explode = game.add.sprite(target.body.x, target.body.y, "explosions");
+    explode.animations.add("boom");
+    explode.play("boom");
+  }
+  projectile.kill();
+}
+
+function victoryTest() {
+  if(ship.health === 0) {
+    console.log("You lose...");
+  } else if(enemies.children.length === 0) {
+    console.log("You win!");
   }
 }
 
 function render() {
-  game.debug.cameraInfo(game.camera, 32, 32);
 }
