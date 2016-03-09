@@ -3,6 +3,7 @@ var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example', { preload:
 function preload() {
 
   game.load.image('star', 'http://www.first-last-always.com/application/themes/default/images/dot-white.png');
+  game.load.image("planet", "planet.png");
   game.load.image('bullet', 'bullet.png');
   game.load.image('ship', 'spshipspr1.png');
   game.load.image("enemy", "smallfreighterspr.png");
@@ -12,6 +13,7 @@ function preload() {
 }
 
 var ship;
+var planet;
 var cursors;
 var bullet;
 var bullets;
@@ -25,6 +27,8 @@ var healthBar;
 var score = 0;
 var text;
 var pKey;
+var lKey;
+var landed = false;
 
 function create() {
   game.renderer.clearBeforeRender = true;
@@ -35,23 +39,26 @@ function create() {
 
   game.stage.backgroundColor = "#000";
 
-  createBullets();
-
-  createLasers();
+  createPlanet();
 
   createAsteroids(40, 2, 4, 5);
 
   createStars(1000, 1);
 
+  createBullets();
+
+  createLasers();
+
   createShip(game.world.randomX, game.world.randomY, 1, 10);
 
-  createEnemies(6, 100, 1, 5);
+  createEnemies(0, 100, 1, 5);
 
   createConsole();
 
   cursors = game.input.keyboard.createCursorKeys();
   game.input.keyboard.addKeyCapture([Phaser.Keyboard.SPACEBAR]);
   pKey = game.input.keyboard.addKey(Phaser.Keyboard.P);
+  lKey = game.input.keyboard.addKey(Phaser.Keyboard.L);
 }
 
 function update() {
@@ -72,9 +79,16 @@ function update() {
       flyEnemies(enemies.children[i]);
     }
   }
-  pKey.onDown.add(pause, this);
+  lKey.onDown.add(land, this);
+  //pKey.onDown.add(pause, this);
   updateScore();
-  victoryTest();
+  //victoryTest();
+  //console.log(Math.sqrt(ship.body.velocity.x * ship.body.velocity.x + ship.body.velocity.y * ship.body.velocity.y));
+}
+
+function createPlanet() {
+  planet = game.add.sprite(game.world.bounds.width / 2, game.world.bounds.height / 2, "planet");
+  planet.scale.setTo(0.2, 0.2);
 }
 
 function createBullets() {
@@ -155,6 +169,24 @@ function updateScore() {
   score++;
 
   text.setText("Score: " + score);
+}
+
+function land() {
+  var velMag = Math.sqrt(ship.body.velocity.x * ship.body.velocity.x + ship.body.velocity.y * ship.body.velocity.y);
+  if(landed) {
+    landed = !landed;
+    pause();
+  } else {
+    if((ship.x > planet.x) && (ship.x < (planet.x + planet.width)) &&
+    ((ship.y > planet.y) && (ship.y < (planet.y + planet.height)))){
+      if(velMag < 20) {
+        landed = !landed;
+        pause();
+      } else {
+        console.log("Slow Down!");
+      }
+    }
+  }
 }
 
 function fireBullet() {
