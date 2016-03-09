@@ -19,9 +19,12 @@ var bulletTime = 0;
 var asteroids;
 var asteroid;
 var explosion;
-//var enemy;
 var lasers;
 var laser;
+var healthBar;
+var score = 0;
+var text;
+var pKey;
 
 function create() {
   game.renderer.clearBeforeRender = true;
@@ -36,39 +39,23 @@ function create() {
 
   createLasers();
 
-  createAsteroids(40, 1, 5);
+  createAsteroids(40, 2, 4, 5);
 
   createStars(1000, 1);
 
-  createShip(300, 300, 1, 10);
+  createShip(game.world.randomX, game.world.randomY, 1, 10);
 
-  createEnemies(2, 100, 1, 5);
+  createEnemies(6, 100, 1, 5);
+
+  createConsole();
 
   cursors = game.input.keyboard.createCursorKeys();
-  game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
+  game.input.keyboard.addKeyCapture([Phaser.Keyboard.SPACEBAR]);
+  pKey = game.input.keyboard.addKey(Phaser.Keyboard.P);
 }
 
 function update() {
-  screenWrap(ship);
-//  screenWrap(enemies);
-
-  if (cursors.up.isDown) {
-    game.physics.arcade.accelerationFromRotation(ship.rotation, 300, ship.body.acceleration);
-  } else {
-    ship.body.acceleration.set(0);
-  }
-
-  if (cursors.left.isDown) {
-    ship.body.angularVelocity = -300;
-  } else if (cursors.right.isDown) {
-    ship.body.angularVelocity = 300;
-  } else {
-    ship.body.angularVelocity = 0;
-  }
-
-  if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
-    fireBullet();
-  }
+  flyShip();
 
   game.physics.arcade.overlap(asteroids, bullets, collisionHandler, null, this);
 
@@ -85,7 +72,8 @@ function update() {
       flyEnemies(enemies.children[i]);
     }
   }
-
+  pKey.onDown.add(pause, this);
+  updateScore();
   victoryTest();
 }
 
@@ -107,15 +95,17 @@ function createLasers() {
   lasers.setAll("anchor.y", 0.5);
 }
 
-function createAsteroids(n, v, health) {
+function createAsteroids(n, lv, av, health) {
   asteroids = game.add.group();
   asteroids.enableBody = true;
   asteroids.physicsBodyType = Phaser.Physics.ARCADE;
 
   for (var i = 0; i < n; i++) {
     asteroid = game.add.sprite(game.world.randomX, game.world.randomY, "asteroids", i, asteroids);
-    asteroid.body.velocity.x = v;
-    asteroid.body.velocity.y = v;
+    asteroid.body.velocity.x = Math.random() * lv;
+    asteroid.body.velocity.y = Math.random() * lv;
+    asteroid.body.angularVelocity = Math.random() * av;
+    asteroid.anchor.set(0.5, 0.5);
     asteroid.health = health;
   }
 }
@@ -129,19 +119,20 @@ function createStars(n, s) {
 
 function createShip(x, y, size, health) {
   ship = game.add.sprite(x, y, 'ship');
-  ship.anchor.set(0.5);
+  ship.anchor.set(0.5, 0.5);
   ship.scale.setTo(size, size);
   game.camera.follow(ship);
   game.physics.enable(ship, Phaser.Physics.ARCADE);
   ship.body.maxVelocity.set(300);
   ship.health = health;
+  ship.totalHealth = health;
 }
 
 function createEnemies(n, v, size, health) {
   enemies = game.add.group();
 
   for (var i = 0; i < n; i++) {
-    var enemy = game.add.sprite(500, 300 + 200 * i, "enemy", 1, enemies);
+    var enemy = game.add.sprite(game.world.randomX, game.world.randomY, "enemy", 1, enemies);
     enemy.anchor.set(0.5);
     enemy.scale.setTo(size, size);
     game.physics.enable(enemy, Phaser.Physics.ARCADE);
@@ -151,13 +142,28 @@ function createEnemies(n, v, size, health) {
   }
 }
 
+function createConsole() {
+  var barConfig = {width: 100, height: 10, x: 60, y: 15};
+  healthBar = new HealthBar(this.game, barConfig);
+  healthBar.setFixedToCamera(true);
+
+  text = game.add.text(10, 30, "Score: " + score, {font: "40px", fill: "#fff"});
+  text.fixedToCamera = true;
+}
+
+function updateScore() {
+  score++;
+
+  text.setText("Score: " + score);
+}
+
 function fireBullet() {
   if(game.time.now > bulletTime) {
     bullet = bullets.getFirstExists(false);
 
     if(bullet) {
       bullet.reset(ship.body.x + 25, ship.body.y + 25);
-      bullet.lifespan = 2000;
+      bullet.lifespan = 1000;
       bullet.rotation = ship.rotation;
       game.physics.arcade.velocityFromRotation(ship.rotation, 600, bullet.body.velocity);
       bulletTime = game.time.now + 50;
@@ -171,10 +177,10 @@ function fireLaser(enemy) {
 
     if(laser) {
       laser.reset(enemy.body.x + 25, enemy.body.y + 25);
-      laser.lifespan = 2000;
+      laser.lifespan = 1600;
       laser.rotation = enemy.rotation;
       game.physics.arcade.velocityFromRotation(enemy.rotation, 400, laser.body.velocity);
-      enemy.laserTime = game.time.now + 60;
+      enemy.laserTime = game.time.now + 100;
     }
   }
 }
@@ -196,6 +202,25 @@ function flyEnemies(enemy) {
   game.physics.arcade.accelerationFromRotation(enemy.rotation, 400, enemy.body.acceleration);
 }
 
+function flyShip() {
+  screenWrap(ship);
+  if (cursors.up.isDown) {
+    game.physics.arcade.accelerationFromRotation(ship.rotation, 300, ship.body.acceleration);
+  } else {
+    ship.body.acceleration.set(0);
+  }
+  if (cursors.left.isDown) {
+    ship.body.angularVelocity = -300;
+  } else if (cursors.right.isDown) {
+    ship.body.angularVelocity = 300;
+  } else {
+    ship.body.angularVelocity = 0;
+  }
+  if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
+    fireBullet();
+  }
+}
+
 function screenWrap (ship) {
   if (ship.x < 0) {
     ship.x = game.world.bounds.width;
@@ -215,6 +240,9 @@ function screenWrap (ship) {
 function collisionHandler(target, projectile) {
   if(target.health) {
     target.health -= 1;
+    if(target === ship) {
+      healthBar.setPercent(100 * (target.health / target.totalHealth))
+    }
   } else {
     target.kill();
     var explode = game.add.sprite(target.body.x, target.body.y, "explosions");
@@ -227,9 +255,19 @@ function collisionHandler(target, projectile) {
 function victoryTest() {
   if(ship.health === 0) {
     console.log("You lose...");
-  } else if(enemies.children.length === 0) {
-    console.log("You win!");
+    return;
+  } else {
+    for (var i = 0; i < enemies.children.length; i++) {
+      if(enemies.children[i].alive){
+        return;
+      }
+    }
   }
+  console.log("You WIN!");
+}
+
+function pause() {
+  game.paused = (game.paused ? false : true);
 }
 
 function render() {
