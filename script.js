@@ -1,18 +1,33 @@
 var spaceGame = {};
 var game = new Phaser.Game(800, 600, Phaser.CANVAS, '');
 
-spaceGame.stateA = function() {
-  this.level = 1;
-  this.score = 5000;
-  this.shipWeapon = spaceGame.stateA.prototype.fireBullet;
-  this.health = 10;
-  this.oreCollected = 0;
-  this.maxVelocity = 300;
-  this.la = 300;
+spaceGame.stateBoot = function() {
+
 };
 
-spaceGame.stateA.prototype = {
+spaceGame.stateBoot.prototype = {
   preload: function() {
+    this.load.image('progressBar', 'progressbar.png');
+    this.load.image('startButton', 'startbutton.png');
+  },
+
+  create: function() {
+    this.game.stage.backgroundColor = '#aaa';
+
+    this.state.start('StatePreload');
+  }
+};
+
+spaceGame.statePreload = function() {
+};
+
+spaceGame.statePreload.prototype = {
+  preload: function() {
+
+    this.progressBar = this.add.sprite(this.game.world.centerX, this.game.world.centerY, 'progressBar');
+    this.progressBar.anchor.setTo(0.5);
+    this.load.setPreloadSprite(this.progressBar);
+
     this.load.image('star', 'http://www.first-last-always.com/application/themes/default/images/dot-white.png');
     this.load.image('planet', 'planet.png');
     this.load.image('bullet', 'bullet.png');
@@ -28,8 +43,33 @@ spaceGame.stateA.prototype = {
     this.load.audio('bulletSound', 'http://0.0.0.0:8000/bulletshotsfx.mp3');
     this.load.audio('explosionSound', 'http://0.0.0.0:8000/explosionsfx.mp3');
     this.load.audio('engineSound', 'http://0.0.0.0:8000/enginesfx.m4a');
+    this.load.image('buyButton', 'buybutton.png');
+    this.load.image('sellButton', 'sellbutton.png');
+    this.load.image('superLaserButton', 'superlaserbutton.png');
+    this.load.image('betterArmorButton', 'betterarmorbutton.png');
+    this.load.image('betterMainButton', 'bettermainenginebutton.png');
   },
 
+  create: function() {
+    this.progressBar.kill();
+    this.startButton = this.add.button(this.game.world.centerX, this.game.world.centerY, 'startButton', function(){
+      this.state.start('StateA');
+    }, this);
+    this.startButton.anchor.setTo(0.5);
+  }
+}
+
+spaceGame.stateA = function() {
+  this.level = 1;
+  this.score = 5000;
+  this.shipWeapon = spaceGame.stateA.prototype.fireBullet;
+  this.health = 10;
+  this.oreCollected = 0;
+  this.maxVelocity = 300;
+  this.la = 300;
+};
+
+spaceGame.stateA.prototype = {
   create: function() {
     game.renderer.clearBeforeRender = true;
     game.renderer.roundPixels = true;
@@ -389,13 +429,6 @@ spaceGame.stateB = function(game) {
 };
 
 spaceGame.stateB.prototype = {
-  preload: function() {
-    this.load.image('buyButton', 'buybutton.png');
-    this.load.image('sellButton', 'sellbutton.png');
-    this.load.image('superLaserButton', 'superlaserbutton.png');
-    this.load.image('betterArmorButton', 'betterarmorbutton.png');
-    this.load.image('betterMainButton', 'bettermainenginebutton.png');
-  },
   create: function() {
     this.game.stage.backgroundColor = '#888';
     this.showScore();
@@ -467,5 +500,7 @@ spaceGame.stateB.prototype = {
 
 game.state.add('StateA', spaceGame.stateA);
 game.state.add('StateB', spaceGame.stateB);
+game.state.add('StatePreload', spaceGame.statePreload);
+game.state.add('StateBoot', spaceGame.stateBoot);
 
-game.state.start('StateA');
+game.state.start('StateBoot');
