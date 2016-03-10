@@ -85,7 +85,7 @@ spaceGame.stateA.prototype = {
     }
     lKey.onDown.add(this.land, this);
     pKey.onDown.add(this.pause, this);
-    this.updateScore();
+    this.updateConsole();
 //    this.victoryTest();
     console.log(Math.sqrt(ship.body.velocity.x * ship.body.velocity.x + ship.body.velocity.y * ship.body.velocity.y));
   },
@@ -177,7 +177,7 @@ spaceGame.stateA.prototype = {
     this.healthBar = new HealthBar(this.game, barConfig);
     this.healthBar.setFixedToCamera(true);
 
-    this.text = this.game.add.text(10, 30, "Score: " + this.score, {font: "40px", fill: "#fff"});
+    this.text = this.game.add.text(10, 30, "Score: " + this.score + "\nOre: " + this.oreCollected, {font: "40px", fill: "#fff"});
     this.text.fixedToCamera = true;
   },
 
@@ -366,8 +366,8 @@ spaceGame.stateA.prototype = {
     }
   },
 
-  updateScore: function() {
-    this.text.setText("Score: " + this.score);
+  updateConsole: function() {
+    this.text.setText("Score: " + this.score + "\nOre: " + this.oreCollected);
   }
 }
 
@@ -409,7 +409,7 @@ spaceGame.stateB.prototype = {
 
   sell: function() {
     console.log("SELL");
-    this.otherState.score += this.otherState.oreCollected * 50;
+    this.otherState.score += this.otherState.oreCollected * 25;
     this.otherState.oreCollected = 0;
   },
 
