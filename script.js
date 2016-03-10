@@ -1,3 +1,4 @@
+var scoreData = new Firebase('blazing-heat-3256.firebaseIO.com');
 var spaceGame = {};
 var game = new Phaser.Game(800, 600, Phaser.CANVAS, '');
 
@@ -70,6 +71,7 @@ spaceGame.stateA = function() {
   this.oreCollected = 0;
   this.maxVelocity = 300;
   this.la = 300;
+  this.pushCount = true;
   this.messageText = "Go, Fight, Win!";
 };
 
@@ -397,8 +399,12 @@ spaceGame.stateA.prototype = {
   },
 
   victoryTest: function() {
-    if (ship.health === 0) {
+    if (ship.health <= 0) {
       this.messageText = "You lose...";
+      if (this.pushCount) {
+        scoreData.push({ name: 'Will', score: this.score });
+        this.pushCount = !this.pushCount;
+      }
       return;
     } else {
       for (var i = 0; i < this.enemies.children.length; i++) {
