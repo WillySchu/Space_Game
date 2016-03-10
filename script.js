@@ -23,7 +23,6 @@ spaceGame.statePreload = function() {
 
 spaceGame.statePreload.prototype = {
   preload: function() {
-
     this.progressBar = this.add.sprite(this.game.world.centerX, this.game.world.centerY, 'progressBar');
     this.progressBar.anchor.setTo(0.5);
     this.load.setPreloadSprite(this.progressBar);
@@ -52,12 +51,16 @@ spaceGame.statePreload.prototype = {
 
   create: function() {
     this.progressBar.kill();
-    this.startButton = this.add.button(this.game.world.centerX, this.game.world.centerY, 'startButton', function(){
-      this.state.start('StateA');
-    }, this);
+    this.enterKey = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+    this.startButton = this.add.button(this.game.world.centerX, this.game.world.centerY, 'startButton', this.startGame, this);
     this.startButton.anchor.setTo(0.5);
+    this.enterKey.onDown.add(this.startGame, this);
+  },
+
+  startGame: function() {
+    this.state.start('StateA');
   }
-}
+};
 
 spaceGame.stateA = function() {
   this.level = 1;
@@ -67,6 +70,7 @@ spaceGame.stateA = function() {
   this.oreCollected = 0;
   this.maxVelocity = 300;
   this.la = 300;
+  this.messageText = "Go, Fight, Win!";
 };
 
 spaceGame.stateA.prototype = {
@@ -97,42 +101,45 @@ spaceGame.stateA.prototype = {
 
     this.createConsole();
 
-    cursors = game.input.keyboard.createCursorKeys();
+    this.createMessage(this.messageText);
+
+    this.cursors = game.input.keyboard.createCursorKeys();
     game.input.keyboard.addKeyCapture([Phaser.Keyboard.SPACEBAR]);
-    pKey = game.input.keyboard.addKey(Phaser.Keyboard.P);
-    lKey = game.input.keyboard.addKey(Phaser.Keyboard.L);
+    this.pKey = game.input.keyboard.addKey(Phaser.Keyboard.P);
+    this.lKey = game.input.keyboard.addKey(Phaser.Keyboard.L);
   },
 
   update: function() {
     this.flyShip();
 
-    game.physics.arcade.overlap(enemies, superLasers, this.collisionHandler, null, this);
+    game.physics.arcade.overlap(this.enemies, superLasers, this.collisionHandler, null, this);
 
-    game.physics.arcade.overlap(asteroids, superLasers, this.collisionHandler, null, this);
+    game.physics.arcade.overlap(this.asteroids, superLasers, this.collisionHandler, null, this);
 
-    game.physics.arcade.overlap(asteroids, bullets, this.collisionHandler, null, this);
+    game.physics.arcade.overlap(this.asteroids, bullets, this.collisionHandler, null, this);
 
-    game.physics.arcade.overlap(asteroids, lasers, this.collisionHandler, null, this);
+    game.physics.arcade.overlap(this.asteroids, lasers, this.collisionHandler, null, this);
 
     game.physics.arcade.overlap(ship, lasers, this.collisionHandler, null, this);
 
-    game.physics.arcade.overlap(enemies, bullets, this.collisionHandler, null, this);
+    game.physics.arcade.overlap(this.enemies, bullets, this.collisionHandler, null, this);
 
     game.physics.arcade.overlap(ship, ores, this.pickupOre, null, this);
 
     bullets.forEachExists(this.screenWrap, this);
     lasers.forEachExists(this.screenWrap, this);
-    enemies.forEachExists(this.screenWrap, this);
+    this.enemies.forEachExists(this.screenWrap, this);
 
-    for (var i = 0; i < enemies.children.length; i++) {
-      if (enemies.children[i].alive) {
-        this.flyEnemies(enemies.children[i]);
+    for (var i = 0; i < this.enemies.children.length; i++) {
+      if (this.enemies.children[i].alive) {
+        this.flyEnemies(this.enemies.children[i]);
       }
     }
-    lKey.onDown.add(this.land, this);
-    pKey.onDown.add(this.pause, this);
+    this.lKey.onDown.add(this.land, this);
+    this.pKey.onDown.add(this.pause, this);
     this.updateConsole();
-//    this.victoryTest();
+    this.updateMessage();
+    this.victoryTest();
     console.log(Math.sqrt(ship.body.velocity.x * ship.body.velocity.x + ship.body.velocity.y * ship.body.velocity.y));
   },
 
@@ -184,12 +191,12 @@ spaceGame.stateA.prototype = {
   },
 
   createAsteroids: function(n, lv, av, health) {
-    asteroids = game.add.group();
-    asteroids.enableBody = true;
-    asteroids.physicsBodyType = Phaser.Physics.ARCADE;
+    this.asteroids = game.add.group();
+    this.asteroids.enableBody = true;
+    this.asteroids.physicsBodyType = Phaser.Physics.ARCADE;
 
     for (var i = 0; i < n; i++) {
-      asteroid = game.add.sprite(game.world.randomX, game.world.randomY, 'asteroids', i, asteroids);
+      asteroid = game.add.sprite(game.world.randomX, game.world.randomY, 'asteroids', i, this.asteroids);
       asteroid.body.velocity.x = Math.random() * lv;
       asteroid.body.velocity.y = Math.random() * lv;
       asteroid.body.angularVelocity = Math.random() * av;
@@ -208,10 +215,10 @@ spaceGame.stateA.prototype = {
   },
 
   createEnemies: function(n, v, size, health) {
-    enemies = game.add.group();
+    this.enemies = game.add.group();
 
     for (var i = 0; i < n; i++) {
-      var enemy = game.add.sprite(game.world.randomX, game.world.randomY, 'enemy', 1, enemies);
+      var enemy = game.add.sprite(game.world.randomX, game.world.randomY, 'enemy', 1, this.enemies);
 
       enemy.anchor.set(0.5);
       enemy.scale.setTo(size, size);
@@ -229,8 +236,8 @@ spaceGame.stateA.prototype = {
     this.healthBar = new HealthBar(this.game, barConfig);
     this.healthBar.setFixedToCamera(true);
 
-    this.text = this.game.add.text(10, 30, 'Score: ' + this.score + '\nOre: ' + this.oreCollected, { font: '40px', fill: '#fff' });
-    this.text.fixedToCamera = true;
+    this.consoleText = this.game.add.text(10, 30, 'Score: ' + this.score + '\nOre: ' + this.oreCollected, { font: '40px', fill: '#fff' });
+    this.consoleText.fixedToCamera = true;
   },
 
   createShip: function(x, y, size, health) {
@@ -262,6 +269,7 @@ spaceGame.stateA.prototype = {
   },
 
   fireBullet: function() {
+    console.log(this);
     if (game.time.now > this.rof) {
       bullet = bullets.getFirstExists(false);
 
@@ -312,15 +320,15 @@ spaceGame.stateA.prototype = {
 
   flyShip: function() {
     this.screenWrap(ship);
-    if (cursors.up.isDown) {
+    if (this.cursors.up.isDown) {
       game.physics.arcade.accelerationFromRotation(ship.rotation, ship.la, ship.body.acceleration);
       engineSFX.play();
     } else {
       ship.body.acceleration.set(0);
     }
-    if (cursors.left.isDown) {
+    if (this.cursors.left.isDown) {
       ship.body.angularVelocity = -ship.aa;
-    } else if (cursors.right.isDown) {
+    } else if (this.cursors.right.isDown) {
       ship.body.angularVelocity = ship.aa;
     } else {
       ship.body.angularVelocity = 0;
@@ -390,16 +398,16 @@ spaceGame.stateA.prototype = {
 
   victoryTest: function() {
     if (ship.health === 0) {
-      console.log('You lose...');
+      this.messageText = "You lose...";
       return;
     } else {
-      for (var i = 0; i < enemies.children.length; i++) {
-        if(enemies.children[i].alive) {
+      for (var i = 0; i < this.enemies.children.length; i++) {
+        if(this.enemies.children[i].alive) {
           return;
         }
       }
     }
-    console.log('You WIN!');
+    this.messageText = "You win!"
   },
 
   pause: function() {
@@ -414,18 +422,28 @@ spaceGame.stateA.prototype = {
       if (velMag < 20) {
         this.state.start('StateB');
       } else {
-        console.log('Slow Down!');
+        this.messageText = "Slow down to land."
       }
     }
   },
 
+  createMessage: function() {
+    this.firstMessageText = this.game.add.text(10, this.game.height - 20, this.messageText, { font: '40px', fill: '#fff' });
+    this.firstMessageText.fixedToCamera = true;
+  },
+
   updateConsole: function() {
-    this.text.setText('Score: ' + this.score + '\nOre: ' + this.oreCollected);
+    this.consoleText.setText('Score: ' + this.score + '\nOre: ' + this.oreCollected);
+  },
+
+  updateMessage: function() {
+    this.firstMessageText.setText(this.messageText);
   }
 };
 
 spaceGame.stateB = function(game) {
   this.otherState = game.state.states.StateA;
+  this.messageText = 'Welcom to Earth.'
 };
 
 spaceGame.stateB.prototype = {
@@ -433,17 +451,25 @@ spaceGame.stateB.prototype = {
     this.game.stage.backgroundColor = '#888';
     this.showScore();
 
-    this.buyButton = this.game.add.button(game.width / 4, game.height / 4, 'buyButton', this.buy, this);
+    this.buyButton = this.game.add.button(game.width / 7, game.height / 4, 'buyButton', this.buy, this);
 
-    this.sellButton = this.game.add.button(game.width / 2, game.height / 4, 'sellButton', this.sell, this);
+    this.sellButton = this.game.add.button(game.width / 1.5, game.height / 4, 'sellButton', this.sell, this);
 
-    lKey = game.input.keyboard.addKey(Phaser.Keyboard.L);
+    this.createMessage();
+
+    this.lKey = game.input.keyboard.addKey(Phaser.Keyboard.L);
   },
   update: function() {
-    lKey.onDown.add(this.launch, this);
+    this.lKey.onDown.add(this.launch, this);
     this.updateScore();
+    this.updateMessage();
   },
+
   render: function() {
+  },
+
+  createMessage: function() {
+    this.firstMessageText = this.game.add.text(10, this.game.height - 20, this.messageText, { font: '40px', fill: '#fff' });
   },
 
   buy: function() {
@@ -454,14 +480,14 @@ spaceGame.stateB.prototype = {
   },
 
   sell: function() {
-    console.log('SELL');
     this.otherState.score += this.otherState.oreCollected * 25;
+    this.messageText = 'Sold ' + this.otherState.oreCollected + ' ore for ' + this.otherState.oreCollected * 25 + ' points.';
     this.otherState.oreCollected = 0;
   },
 
   buySuperLaser: function() {
     if (this.otherState.score > 499) {
-      console.log('bought');
+      this.messageText = "Bought Super Laser."
       this.otherState.shipWeapon = spaceGame.stateA.prototype.fireSuperLaser;
       this.otherState.score -= 500;
     }
@@ -469,7 +495,7 @@ spaceGame.stateB.prototype = {
 
   buyBetterArmor: function() {
     if (this.otherState.score > 999) {
-      console.log('bought');
+      this.messageText = 'Bought New Armor.';
       this.otherState.health = 20;
       this.otherState.score -= 1000;
     }
@@ -477,7 +503,7 @@ spaceGame.stateB.prototype = {
 
   buyBetterMain: function() {
     if (this.otherState.score > 999) {
-      console.log('bought');
+      this.messageText = 'Bought New Engine.'
       this.otherState.la = 500;
       this.otherState.maxVelocity = 500;
       this.otherState.score -= 1000;
@@ -491,6 +517,10 @@ spaceGame.stateB.prototype = {
 
   launch: function() {
     this.state.start('StateA');
+  },
+
+  updateMessage: function() {
+    this.firstMessageText.setText(this.messageText);
   },
 
   updateScore: function() {
