@@ -157,7 +157,7 @@ spaceGame.stateA.prototype = {
     this.updateConsole();
     this.updateMessage();
     this.victoryTest();
-    // console.log(Math.sqrt(ship.body.velocity.x * ship.body.velocity.x + ship.body.velocity.y * ship.body.velocity.y));
+    console.log(Math.sqrt(ship.body.velocity.x * ship.body.velocity.x + ship.body.velocity.y * ship.body.velocity.y));
   },
 
   render: function() {
@@ -455,7 +455,7 @@ spaceGame.stateA.prototype = {
 
     if (ship.x > this.planet.x && ship.x < this.planet.x + this.planet.width &&
     ship.y > this.planet.y && ship.y < this.planet.y + this.planet.height) {
-      if (velMag < 20) {
+      if (velMag < 100) {
         level += 1;
         this.state.start('StateB');
       } else {
