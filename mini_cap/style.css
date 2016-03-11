@@ -24,13 +24,12 @@ footer {
 .scores {
   height: 84vh;
   background-color: green;
-  flex-direction: row;
   flex-basis: 200px;
   flex-grow: 1;
   flex-shrink: 0;
 }
+
 .game {
-  flex-direction: row;
   width: 800px;
   height: 84vh;
   margin: 0;
