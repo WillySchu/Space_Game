@@ -390,7 +390,7 @@ spaceGame.stateA.prototype = {
     if (game.time.now > this.rof) {
       laser2 = laser2s.getFirstExists(false);
 
-      if(laser2) {
+      if (laser2) {
         laser2.power = 3;
         laser2.reset(enemy.body.x + Math.cos(enemy.rotation) * 50 + 30, enemy.body.y + Math.sin(enemy.rotation) * 50 + 30);
         laser2.lifespan = 1600;
@@ -457,13 +457,13 @@ spaceGame.stateA.prototype = {
   },
 
   collisionHandler: function(target, projectile) {
-    if(target.health > 0) {
+    if (target.health > 0) {
       target.health -= projectile.power;
       if(target === ship) {
         this.healthBar.setPercent(100 * (target.health / target.totalHealth))
       }
     } else {
-      if(target.key === 'asteroids') {
+      if (target.key === 'asteroids') {
         this.spawnOre(target);
       }
       target.kill();
@@ -482,7 +482,7 @@ spaceGame.stateA.prototype = {
 
   victoryTest: function() {
     if (ship.health <= 0) {
-      this.messageText = "You lose...";
+      this.messageText = 'You lose...';
       if (this.pushCount) {
         this.dTime = this.game.time.now;
         scoreData.push({ name: this.name, score: this.score });
@@ -507,7 +507,7 @@ spaceGame.stateA.prototype = {
         this.level += 1;
         this.state.start('StateB');
       } else {
-        this.messageText = "Slow down to land."
+        this.messageText = 'Slow down to land.';
       }
     }
   },
@@ -528,7 +528,7 @@ spaceGame.stateA.prototype = {
 
 spaceGame.stateB = function(game) {
   this.otherState = game.state.states.StateA;
-  this.messageText = 'Welcom to Earth.'
+  this.messageText = 'Welcom to Earth.';
 };
 
 spaceGame.stateB.prototype = {
@@ -571,7 +571,7 @@ spaceGame.stateB.prototype = {
 
   buySuperLaser: function() {
     if (this.otherState.score > 499) {
-      this.messageText = "Bought Super Laser."
+      this.messageText = 'Bought Super Laser.';
       this.otherState.shipWeapon = spaceGame.stateA.prototype.fireSuperLaser;
       this.otherState.score -= 500;
     }
@@ -587,7 +587,7 @@ spaceGame.stateB.prototype = {
 
   buyBetterMain: function() {
     if (this.otherState.score > 499) {
-      this.messageText = 'Bought New Engine.'
+      this.messageText = 'Bought New Engine.';
       this.otherState.la = 500;
       this.otherState.maxVelocity = 500;
       this.otherState.score -= 500;
@@ -615,14 +615,13 @@ spaceGame.stateB.prototype = {
 
 spaceGame.stateDeath = function() {
   this.gameState = game.state.states.StateA;
-}
+};
 
 spaceGame.stateDeath.prototype = {
   create: function() {
     game.world.setBounds(0, 0, 800, 600);
     this.game.stage.backgroundColor = '#aaa';
     this.enterKey = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
-    console.log(this.game.world.centerX);
     this.startButton = this.add.button(this.game.world.centerX, this.game.world.centerY, 'startButton', this.startAgain, this);
     this.startButton.anchor.setTo(0.5);
     this.text = game.add.text(game.world.centerX, 250, 'Game Over. Play Again?');
@@ -642,7 +641,7 @@ spaceGame.stateDeath.prototype = {
 
     this.state.start('StateA');
   }
-}
+};
 
 game.state.add('StateA', spaceGame.stateA);
 game.state.add('StateB', spaceGame.stateB);

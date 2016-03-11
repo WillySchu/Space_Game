@@ -23,9 +23,11 @@ var topScores = {
   },
   appendScores: function(scores) {
     var $ol = $('ol');
+
     $ol.empty();
     for (var i = 0; i < scores.length; i++) {
       var $li = $('<li>' + scores[i].name + ' - ' + scores[i].score + '</li>');
+
       $ol.append($li);
     }
   }
@@ -33,6 +35,6 @@ var topScores = {
 
 scoreData.on('child_added', function(data) {
   var top10 = topScores.findScores(data.val());
-  console.log(top10);
+
   topScores.appendScores(top10);
 });
