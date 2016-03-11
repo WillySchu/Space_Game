@@ -103,7 +103,7 @@ spaceGame.stateA.prototype = {
 
     this.createPlanet();
 
-    this.createAsteroids(40, 2, 4, 5);
+    this.createAsteroids(20, 2, 4, 5);
 
     this.createBullets();
 
@@ -505,7 +505,7 @@ spaceGame.stateB.prototype = {
 
   sell: function() {
     this.otherState.score += this.otherState.oreCollected * 25;
-    this.messageText = 'Sold ' + this.otherState.oreCollected + ' ore for ' + this.otherState.oreCollected * 25 + ' points.';
+    this.messageText = 'Sold ' + this.otherState.oreCollected + ' ore for ' + this.otherState.oreCollected * 50 + ' points.';
     this.otherState.oreCollected = 0;
   },
 
