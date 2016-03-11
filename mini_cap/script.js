@@ -456,7 +456,7 @@ spaceGame.stateA.prototype = {
     if (ship.x > this.planet.x && ship.x < this.planet.x + this.planet.width &&
     ship.y > this.planet.y && ship.y < this.planet.y + this.planet.height) {
       if (velMag < 100) {
-        level += 1;
+        this.level += 1;
         this.state.start('StateB');
       } else {
         this.messageText = "Slow down to land."
