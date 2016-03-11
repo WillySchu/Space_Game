@@ -417,24 +417,11 @@ spaceGame.stateA.prototype = {
       this.messageText = "You lose...";
       if (this.pushCount) {
         this.dTime = this.game.time.now;
-        console.log(this.dTime);
         scoreData.push({ name: this.name, score: this.score });
         this.pushCount = !this.pushCount;
       }
-      console.log(this.dTime);
       if (this.game.time.now > this.dTime + 2000) {
-        this.level = 1;
-        this.score = 0;
-        this.shipWeapon = spaceGame.stateA.prototype.fireBullet;
-        this.health = 10;
-        this.oreCollected = 0;
-        this.maxVelocity = 300;
-        this.la = 300;
-        this.pushCount = true;
-        this.messageText = "Go, Fight, Win!";
-        this.dTime = Infinity;
-
-        game.state.start('StateA');
+        game.state.start('StateDeath');
       }
       return;
     } else {
@@ -566,9 +553,41 @@ spaceGame.stateB.prototype = {
   }
 };
 
+spaceGame.stateDeath = function() {
+  this.gameState = game.state.states.StateA;
+}
+
+spaceGame.stateDeath.prototype = {
+  create: function() {
+    game.world.setBounds(0, 0, 800, 600);
+    this.game.stage.backgroundColor = '#aaa';
+    this.enterKey = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+    console.log(this.game.world.centerX);
+    this.startButton = this.add.button(this.game.world.centerX, this.game.world.centerY, 'startButton', this.startAgain, this);
+    this.startButton.anchor.setTo(0.5);
+    this.text = game.add.text(game.world.centerX, 250, 'Game Over. Play Again?');
+    this.text.anchor.setTo(0.5);
+  },
+  startAgain: function() {
+    this.gameState.level = 1;
+    this.gameState.score = 0;
+    this.gameState.shipWeapon = spaceGame.stateA.prototype.fireBullet;
+    this.gameState.health = 10;
+    this.gameState.oreCollected = 0;
+    this.gameState.maxVelocity = 300;
+    this.gameState.la = 300;
+    this.gameState.pushCount = true;
+    this.gameState.messageText = "Go, Fight, Win!";
+    this.gameState.dTime = Infinity;
+
+    this.state.start('StateA');
+  }
+}
+
 game.state.add('StateA', spaceGame.stateA);
 game.state.add('StateB', spaceGame.stateB);
 game.state.add('StatePreload', spaceGame.statePreload);
 game.state.add('StateBoot', spaceGame.stateBoot);
+game.state.add('StateDeath', spaceGame.stateDeath);
 
 game.state.start('StateBoot');
