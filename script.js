@@ -1,6 +1,5 @@
-var scoreData = new Firebase('blazing-heat-3256.firebaseIO.com');
 var spaceGame = {};
-var game = new Phaser.Game(800, 600, Phaser.CANVAS, '');
+var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'game');
 
 spaceGame.stateBoot = function() {
 
@@ -8,8 +7,9 @@ spaceGame.stateBoot = function() {
 
 spaceGame.stateBoot.prototype = {
   preload: function() {
-    this.load.image('progressBar', 'progressbar.png');
-    this.load.image('startButton', 'startbutton.png');
+    this.load.image('progressBar', 'sprites/progressbar.png');
+    this.load.image('startButton', 'sprites/startbutton.png');
+    this.load.image('downArrow', 'sprites/downarrow.png')
   },
 
   create: function() {
@@ -27,27 +27,29 @@ spaceGame.statePreload.prototype = {
     this.progressBar = this.add.sprite(this.game.world.centerX, this.game.world.centerY, 'progressBar');
     this.progressBar.anchor.setTo(0.5);
     this.load.setPreloadSprite(this.progressBar);
+    this.downArrow = this.add.sprite(0, this.game.world.height, 'downArrow');
+    this.downArrow.anchor.setTo(0, 1);
 
     this.load.image('star', 'http://www.first-last-always.com/application/themes/default/images/dot-white.png');
-    this.load.image('planet', 'planet.png');
-    this.load.image('bullet', 'bullet.png');
-    this.load.image('ship', 'spshipspr1.png');
-    this.load.image('enemy', 'smallfreighterspr.png');
-    this.load.image('laser', 'laser.png');
-    this.load.image('superLaser', 'superlaser.png');
-    this.load.image('ore', 'ore.png');
-    this.load.spritesheet('asteroids', 'asteroids.png', 128, 128, 16);
-    this.load.spritesheet('explosions', 'explosion.png', 96, 96, 20);
+    this.load.image('planet', 'sprites/planet.png');
+    this.load.image('bullet', 'sprites/bullet.png');
+    this.load.image('ship', 'sprites/spshipspr1.png');
+    this.load.image('enemy', 'sprites/smallfreighterspr.png');
+    this.load.image('laser', 'sprites/laser.png');
+    this.load.image('superLaser', 'sprites/superlaser.png');
+    this.load.image('ore', 'sprites/ore.png');
+    this.load.spritesheet('asteroids', 'sprites/asteroids.png', 128, 128, 16);
+    this.load.spritesheet('explosions', 'sprites/explosion.png', 96, 96, 20);
     this.load.audio('laserSound', 'http://0.0.0.0:8000/lasersfx.wav');
     this.load.audio('superLaserSound', 'http://0.0.0.0:8000/superlasersfx.mp3');
     this.load.audio('bulletSound', 'http://0.0.0.0:8000/bulletshotsfx.mp3');
     this.load.audio('explosionSound', 'http://0.0.0.0:8000/explosionsfx.mp3');
     this.load.audio('engineSound', 'http://0.0.0.0:8000/enginesfx.m4a');
-    this.load.image('buyButton', 'buybutton.png');
-    this.load.image('sellButton', 'sellbutton.png');
-    this.load.image('superLaserButton', 'superlaserbutton.png');
-    this.load.image('betterArmorButton', 'betterarmorbutton.png');
-    this.load.image('betterMainButton', 'bettermainenginebutton.png');
+    this.load.image('buyButton', 'sprites/buybutton.png');
+    this.load.image('sellButton', 'sprites/sellbutton.png');
+    this.load.image('superLaserButton', 'sprites/superlaserbutton.png');
+    this.load.image('betterArmorButton', 'sprites/betterarmorbutton.png');
+    this.load.image('betterMainButton', 'sprites/bettermainenginebutton.png');
   },
 
   create: function() {
@@ -56,6 +58,17 @@ spaceGame.statePreload.prototype = {
     this.startButton = this.add.button(this.game.world.centerX, this.game.world.centerY, 'startButton', this.startGame, this);
     this.startButton.anchor.setTo(0.5);
     this.enterKey.onDown.add(this.startGame, this);
+
+    this.text = game.add.text(game.world.centerX, 250, 'Enter Name Before You Start');
+    this.text.anchor.set(0.5);
+    this.text.align = 'center';
+
+    this.text.font = 'Arial Black';
+    this.text.fontSize = 50;
+    this.text.fontWeight = 'bold';
+    this.text.fill = '#000';
+
+    this.text.setShadow(0, 0, 'rgba(0, 0, 0, 0.5)', 0);
   },
 
   startGame: function() {
@@ -65,7 +78,7 @@ spaceGame.statePreload.prototype = {
 
 spaceGame.stateA = function() {
   this.level = 1;
-  this.score = 5000;
+  this.score = 0;
   this.shipWeapon = spaceGame.stateA.prototype.fireBullet;
   this.health = 10;
   this.oreCollected = 0;
@@ -73,6 +86,7 @@ spaceGame.stateA = function() {
   this.la = 300;
   this.pushCount = true;
   this.messageText = "Go, Fight, Win!";
+  this.dTime = Infinity;
 };
 
 spaceGame.stateA.prototype = {
@@ -112,6 +126,7 @@ spaceGame.stateA.prototype = {
   },
 
   update: function() {
+    this.name = $('input').val();
     this.flyShip();
 
     game.physics.arcade.overlap(this.enemies, superLasers, this.collisionHandler, null, this);
@@ -142,7 +157,7 @@ spaceGame.stateA.prototype = {
     this.updateConsole();
     this.updateMessage();
     this.victoryTest();
-    console.log(Math.sqrt(ship.body.velocity.x * ship.body.velocity.x + ship.body.velocity.y * ship.body.velocity.y));
+    // console.log(Math.sqrt(ship.body.velocity.x * ship.body.velocity.x + ship.body.velocity.y * ship.body.velocity.y));
   },
 
   render: function() {
@@ -271,7 +286,6 @@ spaceGame.stateA.prototype = {
   },
 
   fireBullet: function() {
-    console.log(this);
     if (game.time.now > this.rof) {
       bullet = bullets.getFirstExists(false);
 
@@ -402,8 +416,25 @@ spaceGame.stateA.prototype = {
     if (ship.health <= 0) {
       this.messageText = "You lose...";
       if (this.pushCount) {
-        scoreData.push({ name: 'Will', score: this.score });
+        this.dTime = this.game.time.now;
+        console.log(this.dTime);
+        scoreData.push({ name: this.name, score: this.score });
         this.pushCount = !this.pushCount;
+      }
+      console.log(this.dTime);
+      if (this.game.time.now > this.dTime + 2000) {
+        this.level = 1;
+        this.score = 0;
+        this.shipWeapon = spaceGame.stateA.prototype.fireBullet;
+        this.health = 10;
+        this.oreCollected = 0;
+        this.maxVelocity = 300;
+        this.la = 300;
+        this.pushCount = true;
+        this.messageText = "Go, Fight, Win!";
+        this.dTime = Infinity;
+
+        game.state.start('StateA');
       }
       return;
     } else {
@@ -413,7 +444,6 @@ spaceGame.stateA.prototype = {
         }
       }
     }
-    this.messageText = "You win!"
   },
 
   pause: function() {

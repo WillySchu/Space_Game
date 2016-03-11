@@ -5,11 +5,47 @@
     <link rel="stylesheet" href="style.css">
     <script src="phaser.healthbar/HealthBar.standalone.js"></script>
     <script src='https://cdn.firebase.com/js/client/2.2.1/firebase.js'></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js"></script>
     <title>Space Flight</title>
   </head>
   <body>
-    <h1>Game:</h1>
+    <div class="container">
+      <header>
+        <h1>Space Flight:</h1>
+      </header>
+      <section class="game">
+        <div id="game">
+
+        </div>
+      </section>
+      <section class="scores">
+        <section class="scoresheading">
+          <h1>Scores:</h1>
+          <ol>
+
+          </ol>
+          <br>
+          <h3>Instructions:</h3>
+          <p>
+            Use arrow keys to fly
+          </p>
+          <p>
+            Use space to shoot
+          </p>
+          <p>
+            Use L to land
+          </p>
+          <p>
+            Use P to pause
+          </p>
+        </section>
+      </section>
+      <footer>
+        <input type="text" name="name" value="" placeholder="Enter Your Name.">
+      </footer>
+    </div>
     <script type="text/javascript" src="phaser.min2.js"></script>
+    <script src="scores.js"></script>
     <script src="script.js"></script>
   </body>
 </html>
