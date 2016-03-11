@@ -50,6 +50,8 @@ spaceGame.statePreload.prototype = {
     this.load.image('superLaserButton', 'sprites/superlaserbutton.png');
     this.load.image('betterArmorButton', 'sprites/betterarmorbutton.png');
     this.load.image('betterMainButton', 'sprites/bettermainenginebutton.png');
+    this.load.image('laser2', 'sprites/laser2.png');
+    this.load.image('betterEnemy', 'sprites/xspr5.png');
   },
 
   create: function() {
@@ -109,11 +111,15 @@ spaceGame.stateA.prototype = {
 
     this.createLasers();
 
+    this.createLaser2();
+
     this.createSuperLasers();
 
     this.createShip(this.planet.x + this.planet.width / 2, this.planet.y + this.planet.height / 2, 1, this.health);
 
-    this.createEnemies(this.level + Math.floor(this.level * Math.random()), 100, 1, 5);
+    this.createEnemies(this.level % 3 + Math.floor((this.level - 1) * Math.random()), 100, 200, 1, 5);
+
+    this.createBetterEnemies(Math.floor(this.level / 3), 80, 160, 1, 10);
 
     this.createConsole();
 
@@ -131,27 +137,45 @@ spaceGame.stateA.prototype = {
 
     game.physics.arcade.overlap(this.enemies, superLasers, this.collisionHandler, null, this);
 
+    game.physics.arcade.overlap(this.betterEnemies, superLasers, this.collisionHandler, null, this);
+
     game.physics.arcade.overlap(this.asteroids, superLasers, this.collisionHandler, null, this);
 
     game.physics.arcade.overlap(this.asteroids, bullets, this.collisionHandler, null, this);
 
     game.physics.arcade.overlap(this.asteroids, lasers, this.collisionHandler, null, this);
 
+    game.physics.arcade.overlap(this.asteroids, laser2s, this.collisionHandler, null, this);
+
     game.physics.arcade.overlap(ship, lasers, this.collisionHandler, null, this);
 
+    game.physics.arcade.overlap(ship, laser2s, this.collisionHandler, null, this);
+
     game.physics.arcade.overlap(this.enemies, bullets, this.collisionHandler, null, this);
+
+    game.physics.arcade.overlap(this.betterEnemies, bullets, this.collisionHandler, null, this);
 
     game.physics.arcade.overlap(ship, ores, this.pickupOre, null, this);
 
     bullets.forEachExists(this.screenWrap, this);
     lasers.forEachExists(this.screenWrap, this);
-    this.enemies.forEachExists(this.screenWrap, this);
-
-    for (var i = 0; i < this.enemies.children.length; i++) {
-      if (this.enemies.children[i].alive) {
-        this.flyEnemies(this.enemies.children[i]);
+    if (this.enemies) {
+      this.enemies.forEachExists(this.screenWrap, this);
+      for (var i = 0; i < this.enemies.children.length; i++) {
+        if (this.enemies.children[i].alive) {
+          this.flyEnemies(this.enemies.children[i]);
+        }
       }
     }
+    if (this.betterEnemies) {
+      this.betterEnemies.forEachExists(this.screenWrap, this);
+      for (var i = 0; i < this.betterEnemies.children.length; i++) {
+        if (this.betterEnemies.children[i].alive) {
+          this.flyEnemies(this.betterEnemies.children[i]);
+        }
+      }
+    }
+
     this.lKey.onDown.add(this.land, this);
     this.pKey.onDown.add(this.pause, this);
     this.updateConsole();
@@ -186,6 +210,16 @@ spaceGame.stateA.prototype = {
     lasers.setAll('anchor.x', 0.5);
     lasers.setAll('anchor.y', 0.5);
     laserSFX = this.add.audio('laserSound');
+  },
+
+  createLaser2: function() {
+    laser2s = game.add.group();
+    laser2s.enableBody = true;
+    laser2s.physicsBodyType = Phaser.Physics.ARCADE;
+    laser2s.createMultiple(20, 'laser2');
+    laser2s.setAll('anchor.x', 0.5);
+    laser2s.setAll('anchor.y', 0.5);
+    laser2sSFX = this.add.audio('laserSound');
   },
 
   createSuperLasers: function() {
@@ -231,7 +265,7 @@ spaceGame.stateA.prototype = {
     }
   },
 
-  createEnemies: function(n, v, size, health) {
+  createEnemies: function(n, v, ave, size, health) {
     this.enemies = game.add.group();
 
     for (var i = 0; i < n; i++) {
@@ -244,6 +278,24 @@ spaceGame.stateA.prototype = {
       enemy.health = health;
       enemy.rof = 0;
       enemy.weapon = this.fireLaser;
+      enemy.ave = ave;
+    }
+  },
+
+  createBetterEnemies: function(n, v, ave, size, health) {
+    this.betterEnemies = game.add.group();
+
+    for (var i = 0; i < n; i++) {
+      var betterEnemy = game.add.sprite(game.world.randomX, game.world.randomY, 'betterEnemy', 1, this.betterEnemies);
+
+      betterEnemy.anchor.setTo(0.5);
+      betterEnemy.scale.setTo(size);
+      game.physics.enable(betterEnemy, Phaser.Physics.ARCADE);
+      betterEnemy.body.maxVelocity.set(v);
+      betterEnemy.health = health;
+      betterEnemy.rof = 0;
+      betterEnemy.weapon = this.fireLaser2;
+      betterEnemy.ave = ave;
     }
   },
 
@@ -334,6 +386,22 @@ spaceGame.stateA.prototype = {
     }
   },
 
+  fireLaser2: function(enemy) {
+    if (game.time.now > this.rof) {
+      laser2 = laser2s.getFirstExists(false);
+
+      if(laser2) {
+        laser2.power = 3;
+        laser2.reset(enemy.body.x + Math.cos(enemy.rotation) * 50 + 30, enemy.body.y + Math.sin(enemy.rotation) * 50 + 30);
+        laser2.lifespan = 1600;
+        laser2.rotation = enemy.rotation;
+        game.physics.arcade.velocityFromRotation(enemy.rotation, 301, laser2.body.velocity);
+        this.rof = game.time.now + 300;
+        laser2sSFX.play();
+      }
+    }
+  },
+
   flyShip: function() {
     this.screenWrap(ship);
     if (this.cursors.up.isDown) {
@@ -362,9 +430,9 @@ spaceGame.stateA.prototype = {
     direction.normalize();
     vector = Math.atan2(direction.y, direction.x) - enemy.rotation;
     if (vector > 0.1) {
-      enemy.body.angularVelocity = 200;
+      enemy.body.angularVelocity = enemy.ave;
     } else if (vector < -0.1) {
-      enemy.body.angularVelocity = -200;
+      enemy.body.angularVelocity = -enemy.ave;
     } else {
       enemy.body.angularVelocity = 0;
       enemy.weapon(enemy);
@@ -422,13 +490,6 @@ spaceGame.stateA.prototype = {
       }
       if (this.game.time.now > this.dTime + 2000) {
         game.state.start('StateDeath');
-      }
-      return;
-    } else {
-      for (var i = 0; i < this.enemies.children.length; i++) {
-        if(this.enemies.children[i].alive) {
-          return;
-        }
       }
     }
   },
