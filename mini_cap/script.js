@@ -558,10 +558,9 @@ spaceGame.stateB.prototype = {
   },
 
   buy: function() {
-    console.log('BUY');
-    this.superLaserButton = this.game.add.button(game.width / 4, game.height / 4 + this.buyButton.height, 'superLaserButton', this.buySuperLaser, this);
-    this.betterArmorButton = this.game.add.button(game.width / 4, game.height / 4 + this.buyButton.height + this.superLaserButton.height, 'betterArmorButton', this.buyBetterArmor, this);
-    this.betterMainButton = this.game.add.button(game.width / 4, game.height / 4 + this.buyButton.height + this.superLaserButton.height + this.betterArmorButton.height, 'betterMainButton', this.buyBetterMain, this);
+    this.superLaserButton = this.game.add.button(game.width / 7, game.height / 4 + this.buyButton.height, 'superLaserButton', this.buySuperLaser, this);
+    this.betterArmorButton = this.game.add.button(game.width / 7, game.height / 4 + this.buyButton.height + this.superLaserButton.height, 'betterArmorButton', this.buyBetterArmor, this);
+    this.betterMainButton = this.game.add.button(game.width / 7, game.height / 4 + this.buyButton.height + this.superLaserButton.height + this.betterArmorButton.height, 'betterMainButton', this.buyBetterMain, this);
   },
 
   sell: function() {
