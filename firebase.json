@@ -1,0 +1,9 @@
+{
+  "firebase": "blazing-heat-3256",
+  "public": "mini_cap",
+  "ignore": [
+    "firebase.json",
+    "**/.*",
+    "**/node_modules/**"
+  ]
+}
