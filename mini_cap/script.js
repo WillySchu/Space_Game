@@ -504,7 +504,7 @@ spaceGame.stateB.prototype = {
   },
 
   sell: function() {
-    this.otherState.score += this.otherState.oreCollected * 25;
+    this.otherState.score += this.otherState.oreCollected * 50;
     this.messageText = 'Sold ' + this.otherState.oreCollected + ' ore for ' + this.otherState.oreCollected * 50 + ' points.';
     this.otherState.oreCollected = 0;
   },
