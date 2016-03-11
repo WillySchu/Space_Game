@@ -119,7 +119,7 @@ spaceGame.stateA.prototype = {
 
     this.createEnemies(this.level % 3 + Math.floor((this.level - 1) * Math.random()), 100, 200, 1, 5);
 
-    this.createBetterEnemies(Math.floor(this.level / 3), 80, 160, 1, 10);
+    this.createBetterEnemies(Math.floor(this.level / 3), 80, 160, 1, 15);
 
     this.createConsole();
 
