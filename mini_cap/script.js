@@ -553,6 +553,7 @@ spaceGame.stateB.prototype = {
   },
 
   launch: function() {
+    this.messageText = '';
     this.state.start('StateA');
   },
 
