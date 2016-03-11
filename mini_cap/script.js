@@ -40,11 +40,11 @@ spaceGame.statePreload.prototype = {
     this.load.image('ore', 'sprites/ore.png');
     this.load.spritesheet('asteroids', 'sprites/asteroids.png', 128, 128, 16);
     this.load.spritesheet('explosions', 'sprites/explosion.png', 96, 96, 20);
-    this.load.audio('laserSound', 'http://0.0.0.0:8000/lasersfx.wav');
-    this.load.audio('superLaserSound', 'http://0.0.0.0:8000/superlasersfx.mp3');
-    this.load.audio('bulletSound', 'http://0.0.0.0:8000/bulletshotsfx.mp3');
-    this.load.audio('explosionSound', 'http://0.0.0.0:8000/explosionsfx.mp3');
-    this.load.audio('engineSound', 'http://0.0.0.0:8000/enginesfx.m4a');
+    this.load.audio('laserSound', 'lasersfx.wav');
+    this.load.audio('superLaserSound', 'superlasersfx.mp3');
+    this.load.audio('bulletSound', 'bulletshotsfx.mp3');
+    this.load.audio('explosionSound', 'explosionsfx.mp3');
+    this.load.audio('engineSound', 'enginesfx.m4a');
     this.load.image('buyButton', 'sprites/buybutton.png');
     this.load.image('sellButton', 'sprites/sellbutton.png');
     this.load.image('superLaserButton', 'sprites/superlaserbutton.png');
