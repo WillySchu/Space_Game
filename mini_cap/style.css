@@ -25,6 +25,7 @@ footer {
   height: 8vh;
   background-color: grey;
   padding: 1.5vw;
+  padding-left: 5vw;
 }
 
 .scores {
