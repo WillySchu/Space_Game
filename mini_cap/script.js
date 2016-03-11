@@ -518,19 +518,19 @@ spaceGame.stateB.prototype = {
   },
 
   buyBetterArmor: function() {
-    if (this.otherState.score > 999) {
+    if (this.otherState.score > 499) {
       this.messageText = 'Bought New Armor.';
       this.otherState.health = 20;
-      this.otherState.score -= 1000;
+      this.otherState.score -= 500;
     }
   },
 
   buyBetterMain: function() {
-    if (this.otherState.score > 999) {
+    if (this.otherState.score > 499) {
       this.messageText = 'Bought New Engine.'
       this.otherState.la = 500;
       this.otherState.maxVelocity = 500;
-      this.otherState.score -= 1000;
+      this.otherState.score -= 500;
     }
   },
 
