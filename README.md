@@ -18,7 +18,7 @@ Use the P key to pause the game
 
 #Technologies
 
-HTML
-CSS
-JavaScript
-Phaser
+* HTML
+* CSS
+* JavaScript
+* Phaser
